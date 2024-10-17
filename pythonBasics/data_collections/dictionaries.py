@@ -11,10 +11,26 @@ my_dictionary = {
     "Name":"Stephen",
     "Last name":"Hunnigan",
     "Age": 22,
-    "Languages": {"Python","Swift","Kotlin"}
+    "Languages": {"Python","Swift","Kotlin"},
+    1:1.77
 }
 
-print(my_dictionary)
 print(my_other_dictionary)
+print(my_dictionary)
+
+print(len(my_other_dictionary))
+
+print(my_dictionary["Name"])
+
+my_dictionary["Name"] = "Daryl"
+
+print(my_dictionary["Name"])
+
+print(my_dictionary.items())
+print(my_dictionary.keys())
+print(my_dictionary.values())
+
+print(my_dictionary.fromkeys("Name", "Hi", "Python"))
+
 
 
