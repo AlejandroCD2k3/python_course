@@ -19,5 +19,5 @@ print(my_other_tuple[1:3])
 my_other_tuple = list(my_other_tuple) # We can transform a tuple into a list
 print(type(my_other_tuple))
 
-del my_other_tuple
-print(my_other_tuple)
+del my_other_tuple # This deletes the tuple
+# print(my_other_tuple)  
