@@ -29,8 +29,20 @@ async def users_json():
 async def user():
     return users_list
 
+# Path
+
 @app.get("/user/{id}")
 async def user(id: int):
+    return search_user(id)
+
+# Query
+
+@app.get("/user/")
+async def userquery(id: int):
+    return search_user(id)
+    
+
+def search_user(id: int):
     users = filter(lambda user: user.id == id, users_list)
     try:
         return list(users)[0]
