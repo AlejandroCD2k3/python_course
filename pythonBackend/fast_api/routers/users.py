@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-router = APIRouter()
+router = APIRouter(prefix="/user", tags=["user"], responses={404: {"message":"Not found"}})
 
 # Start server with: python -m uvicorn users:router --reload
 
@@ -23,7 +23,7 @@ users_list = [User(id = 1, name="Michael",lastname="Washington",age=20, url="htt
 
 # ----------------------- CREATE -----------------------
 
-@router.post("/user/", response_model=User ,status_code=201)
+@router.post("/", response_model=User ,status_code=201)
 async def user(user: User):
     if type(search_user(user.id)) == User:
         raise HTTPException(status_code=204, detail="User already exists")
@@ -38,19 +38,19 @@ async def user():
 
 # Path
 
-@router.get("/user/{id}")
+@router.get("/{id}")
 async def user(id: int):
     return search_user(id)
 
 # Query
 
-@router.get("/user/")
+@router.get("/")
 async def userquery(id: int):
     return search_user(id)
 
 # ----------------------- UPDATE -----------------------
 
-@router.put("/user/")
+@router.put("/")
 
 async def user(user: User):
 
@@ -66,7 +66,7 @@ async def user(user: User):
 
 # ----------------------- DELETE -----------------------
 
-@router.delete("/user/{id}")
+@router.delete("/{id}")
 
 async def user(id: int):
 
