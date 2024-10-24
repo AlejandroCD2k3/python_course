@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-app = FastAPI()
+router = APIRouter()
 
-@app.get("/products/")
+@router.get("/products/")
 async def products():
     return ["Product 1", "Product 2", "Product 3", "Product 4", "Product 5"]

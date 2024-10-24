@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI()
+router = APIRouter()
 
-# Start server with: python -m uvicorn users:app --reload
+# Start server with: python -m uvicorn users:router --reload
 
 # User Entity
 
@@ -23,34 +23,34 @@ users_list = [User(id = 1, name="Michael",lastname="Washington",age=20, url="htt
 
 # ----------------------- CREATE -----------------------
 
-@app.post("/user/", response_model=User ,status_code=201)
+@router.post("/user/", response_model=User ,status_code=201)
 async def user(user: User):
     if type(search_user(user.id)) == User:
         raise HTTPException(status_code=204, detail="User already exists")
     else:
-        users_list.append(user)
+        users_list.routerend(user)
     
 # ----------------------- READ -----------------------
 
-@app.get("/users")
+@router.get("/users")
 async def user():
     return users_list
 
 # Path
 
-@app.get("/user/{id}")
+@router.get("/user/{id}")
 async def user(id: int):
     return search_user(id)
 
 # Query
 
-@app.get("/user/")
+@router.get("/user/")
 async def userquery(id: int):
     return search_user(id)
 
 # ----------------------- UPDATE -----------------------
 
-@app.put("/user/")
+@router.put("/user/")
 
 async def user(user: User):
 
@@ -66,7 +66,7 @@ async def user(user: User):
 
 # ----------------------- DELETE -----------------------
 
-@app.delete("/user/{id}")
+@router.delete("/user/{id}")
 
 async def user(id: int):
 
