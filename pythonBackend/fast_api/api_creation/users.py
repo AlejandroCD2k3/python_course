@@ -14,10 +14,23 @@ class User(BaseModel):
     age: int
     url: str
 
+# Database table for users
 
 users_list = [User(id = 1, name="Michael",lastname="Washington",age=20, url="https://michael.dev/"),
               User(id = 2, name="Alex",lastname="Smith",age=25, url="https://alex.dev/"),
               User(id = 3, name="Ashley",lastname="Taylor",age=21, url="https://ashley.dev/")]
+
+
+# ----------------------- CREATE -----------------------
+
+@app.post("/user/")
+async def user(user: User):
+    if type(search_user(user.id)) == User:
+        return {"Error: user already exists"}
+    else:
+        users_list.append(user)
+    
+# ----------------------- READ -----------------------
 
 @app.get("/users_json")
 async def users_json():
@@ -40,7 +53,8 @@ async def user(id: int):
 @app.get("/user/")
 async def userquery(id: int):
     return search_user(id)
-    
+
+# ----------------------- FUNCTIONS -----------------------
 
 def search_user(id: int):
     users = filter(lambda user: user.id == id, users_list)
