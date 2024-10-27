@@ -2,9 +2,13 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+# # --------------------------- DEFINITIONS ---------------------------
+
 app = FastAPI()
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
+
+# --------------------- ENTITIES ---------------------
 
 class User(BaseModel):
     username: str
@@ -14,6 +18,8 @@ class User(BaseModel):
 
 class DBUser(User):
     password: str
+
+# --------------------- FAKE DATA BASE ---------------------
 
 users_db = {
     "simon123": {
@@ -32,6 +38,8 @@ users_db = {
         "password": "654321"
     }
 }
+
+# --------------------------- FUNCTIONS ---------------------------
 
 def search_user_db(username: str):
     if username in users_db:
