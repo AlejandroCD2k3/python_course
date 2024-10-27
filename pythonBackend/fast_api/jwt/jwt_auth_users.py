@@ -2,6 +2,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi import FastAPI, Depends, HTTPException, status
 from pydantic import BaseModel
 from passlib.context import CryptContext
+from datetime import datetime, timedelta
 import jwt
 
 # --------------------------- DEFINITIONS ---------------------------
@@ -10,7 +11,8 @@ app = FastAPI()
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
 encrypt_algorithm = "HS256"
-crypt = CryptContext(schemes=["bycrypt"])
+crypt = CryptContext(schemes=["bcrypt"])
+access_token_duration = 1
 
 # --------------------- ENTITIES ---------------------
 
@@ -31,7 +33,7 @@ users_db = {
         "full_name": "Simon Lamberdt",
         "email": "simon123@gmail.com",
         "disabled": False,
-        "password": "123456"
+        "password": "$2a$12$KK9KT8mwqUhIwZMN0eSqJ.LrKTS65Co/ipDYVvtU5PJetdwSIwt3W"
     },
 
     "arthur321": {
@@ -39,7 +41,7 @@ users_db = {
         "full_name": "Arthur Bonnet",
         "email": "arthur321@gmail.com",
         "disabled": True,
-        "password": "654321"
+        "password": "$2a$12$oJg7RZ7yh1sZkvNLVTi/5Ox/AWcBi1CMA5NQ5z2IOXGZj2GyKmKsG"
     }
 }
 
@@ -62,7 +64,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     
     user = search_user_db(form.username)
 
-    if not form.password == user.password:
+    if not crypt.verify(form.password, user.password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
     
-    return {"access_token": user.username, "token_type":"bearer"}
+    access_token = {"sub":user.username, 
+                    "exp":datetime.utcnow() + timedelta(minutes=access_token_duration)}
+
+    return {"access_token": access_token, "token_type":"bearer"}
