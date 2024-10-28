@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import jwt
+from jwt.exceptions import InvalidTokenError
 
 # --------------------------- DEFINITIONS ---------------------------
 
@@ -11,6 +12,7 @@ app = FastAPI()
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
 encrypt_algorithm = "HS256"
+secret = "e1f53135e559c25302a15e8a1fae7a1a45162dbe7420d9fa1b7f6ff2c8eaea4d"
 crypt = CryptContext(schemes=["bcrypt"])
 access_token_duration = 1
 
@@ -51,6 +53,30 @@ users_db = {
 def search_user_db(username: str):
     if username in users_db:
         return DBUser(**users_db[username])
+    
+def search_user(username: str):
+    if username in users_db:
+        return User(**users_db[username])
+    
+async def auth_user(token: str = Depends(oauth2)):
+    
+    invalid_token_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials", headers={"WWW-Authenticate":"Bearer"})
+
+    try:
+        username = jwt.decode(token, secret, algorithms=[encrypt_algorithm]).get("sub")
+    
+        if username is None:
+            raise invalid_token_exception
+         
+    except InvalidTokenError:
+        raise invalid_token_exception
+    
+    return search_user(username)
+
+async def current_user(user: User = Depends(auth_user)):
+    if user.disabled:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Disabled user")
+    return user
 
 # --------------------------- CREATE ---------------------------
 
@@ -70,4 +96,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     access_token = {"sub":user.username, 
                     "exp":datetime.utcnow() + timedelta(minutes=access_token_duration)}
 
-    return {"access_token": access_token, "token_type":"bearer"}
+    return {"access_token": jwt.encode(access_token, secret,  algorithm=encrypt_algorithm), "token_type":"bearer"}
+
+# --------------------------- READ ---------------------------
+
+@app.get("/users/me")
+async def me(user: User = Depends(current_user)):
+    return user
