@@ -1,5 +1,5 @@
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -8,7 +8,7 @@ from jwt.exceptions import InvalidTokenError
 
 # --------------------------- DEFINITIONS ---------------------------
 
-app = FastAPI()
+app = APIRouter()
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
 encrypt_algorithm = "HS256"
