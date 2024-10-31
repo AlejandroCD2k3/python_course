@@ -62,16 +62,11 @@ async def user(user: User):
 
 # ----------------------- DELETE -----------------------
 
-@router.delete("/{id}")
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 
-async def user(id: int):
+async def user(id: str):
 
-    found = False
-
-    for index, saved_user in enumerate(users_list):
-        if saved_user.id == id:
-            del users_list[index]
-            found = True
+    found = db_client.local.users.find_one_and_delete({"_id": ObjectId(id)})
 
     if not found:
         return "Error: user not deleted"
