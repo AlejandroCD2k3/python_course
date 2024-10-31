@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from db.entity_models.user import User
-from db.schemas.user import user_schema
+from db.schemas.user import user_schema, users_schema
 from db.client import db_client
+from bson import ObjectId
 
 
 router = APIRouter(prefix="/userdb", tags=["userdb"], responses={404: {"message":"Not found"}})
@@ -13,7 +14,7 @@ users_list = []
 @router.post("/", response_model=User ,status_code=201)
 async def user(user: User):
     
-    if type(search_user_by_email(user.email)) == User:
+    if type(search_user("email", user.email)) == User:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
 
     user_dict = dict(user)
@@ -27,21 +28,21 @@ async def user(user: User):
 
 # ----------------------- READ -----------------------
 
-@router.get("/users")
+@router.get("/users", response_model=list[User])
 async def usersdb():
-    return users_list
+    return users_schema(db_client.local.users.find())
 
 # Path
 
 @router.get("/{id}")
-async def user(id: int):
-    return search_user_by_email(id)
+async def user(id: str):
+    return search_user("_id", ObjectId(id))
 
 # Query
 
 @router.get("/")
-async def userquery(id: int):
-    return search_user_by_email(id)
+async def userquery(id: str):
+    return search_user("_id", ObjectId(id))
 
 # ----------------------- UPDATE -----------------------
 
@@ -77,10 +78,10 @@ async def user(id: int):
 
 # ----------------------- FUNCTIONS -----------------------
 
-def search_user_by_email(email: str):
+def search_user(field: str, key):
     
     try:
-        user = user_schema(db_client.local.users.find_one({"email":email}))
+        user = user_schema(db_client.local.users.find_one({field:key}))
         return User(**user)
     except:
         return "{'Error: user not found'}"
