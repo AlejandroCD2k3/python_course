@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from db.entity_models.user import User
 from db.schemas.user import user_schema
 from db.client import db_client
@@ -6,21 +6,15 @@ from db.client import db_client
 
 router = APIRouter(prefix="/userdb", tags=["userdb"], responses={404: {"message":"Not found"}})
 
-# Fake database table for users
-
-"""
-users_list = [User(id = 1, name="Michael",lastname="Washington",age=20, url="https://michael.dev/"),
-              User(id = 2, name="Alex",lastname="Smith",age=25, url="https://alex.dev/"),
-              User(id = 3, name="Ashley",lastname="Taylor",age=21, url="https://ashley.dev/")]
-"""
 users_list = []
 
 # ----------------------- CREATE -----------------------
 
 @router.post("/", response_model=User ,status_code=201)
 async def user(user: User):
-    #if type(search_user(user.id)) == User:
-    #    raise HTTPException(status_code=204, detail="User already exists")
+    
+    if type(search_user_by_email(user.email)) == User:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
 
     user_dict = dict(user)
     del user_dict["id"]
@@ -30,8 +24,6 @@ async def user(user: User):
     new_user = user_schema(db_client.local.users.find_one({"_id":id}))
 
     return User(**new_user)
-
-
 
 # ----------------------- READ -----------------------
 
@@ -43,13 +35,13 @@ async def usersdb():
 
 @router.get("/{id}")
 async def user(id: int):
-    return search_user(id)
+    return search_user_by_email(id)
 
 # Query
 
 @router.get("/")
 async def userquery(id: int):
-    return search_user(id)
+    return search_user_by_email(id)
 
 # ----------------------- UPDATE -----------------------
 
@@ -85,9 +77,10 @@ async def user(id: int):
 
 # ----------------------- FUNCTIONS -----------------------
 
-def search_user(id: int):
-    users = filter(lambda user: user.id == id, users_list)
+def search_user_by_email(email: str):
+    
     try:
-        return list(users)[0]
+        user = user_schema(db_client.local.users.find_one({"email":email}))
+        return User(**user)
     except:
         return "{'Error: user not found'}"
