@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-import products, users, jwt_auth_users
+from . import products, users, jwt_auth_users
 
 app = FastAPI()
 

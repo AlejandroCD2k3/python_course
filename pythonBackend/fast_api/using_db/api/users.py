@@ -1,39 +1,42 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from db.entity_models.user import User
+from db.schemas.user import user_schema
+from db.client import db_client
 
-router = APIRouter(prefix="/user", tags=["user"], responses={404: {"message":"Not found"}})
 
-# Start server with: python -m uvicorn users:router --reload
+router = APIRouter(prefix="/userdb", tags=["userdb"], responses={404: {"message":"Not found"}})
 
-# User Entity
+# Fake database table for users
 
-class User(BaseModel):
-    id: int
-    name: str
-    lastname: str
-    age: int
-    url: str
-
-# Database table for users
-
+"""
 users_list = [User(id = 1, name="Michael",lastname="Washington",age=20, url="https://michael.dev/"),
               User(id = 2, name="Alex",lastname="Smith",age=25, url="https://alex.dev/"),
               User(id = 3, name="Ashley",lastname="Taylor",age=21, url="https://ashley.dev/")]
-
+"""
+users_list = []
 
 # ----------------------- CREATE -----------------------
 
 @router.post("/", response_model=User ,status_code=201)
 async def user(user: User):
-    if type(search_user(user.id)) == User:
-        raise HTTPException(status_code=204, detail="User already exists")
-    else:
-        users_list.routerend(user)
-    
+    #if type(search_user(user.id)) == User:
+    #    raise HTTPException(status_code=204, detail="User already exists")
+
+    user_dict = dict(user)
+    del user_dict["id"]
+
+    id = db_client.local.users.insert_one(user_dict).inserted_id
+
+    new_user = user_schema(db_client.local.users.find_one({"_id":id}))
+
+    return User(**new_user)
+
+
+
 # ----------------------- READ -----------------------
 
 @router.get("/users")
-async def user():
+async def usersdb():
     return users_list
 
 # Path
