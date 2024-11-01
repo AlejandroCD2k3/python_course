@@ -4,10 +4,7 @@ from db.schemas.user import user_schema, users_schema
 from db.client import db_client
 from bson import ObjectId
 
-
 router = APIRouter(prefix="/userdb", tags=["userdb"], responses={404: {"message":"Not found"}})
-
-users_list = []
 
 # ----------------------- CREATE -----------------------
 
@@ -46,20 +43,19 @@ async def userquery(id: str):
 
 # ----------------------- UPDATE -----------------------
 
-@router.put("/")
+@router.put("/", response_model=User)
 
 async def user(user: User):
 
-    found = False
+    user_dict = dict(user)
+    del user_dict["id"]
 
-    for index, saved_user in enumerate(users_list):
-        if saved_user.id == user.id:
-            users_list[index] = user
-            found = True
-
-    if not found:
+    try:
+        db_client.local.users.find_one_and_replace({"_id":ObjectId(user.id)}, user_dict)
+    except:
         return "Error: user not found"
-
+        
+    return search_user("_id", ObjectId(user.id))
 # ----------------------- DELETE -----------------------
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
