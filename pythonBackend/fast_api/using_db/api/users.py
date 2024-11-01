@@ -17,7 +17,7 @@ async def user(user: User):
     user_dict = dict(user)
     del user_dict["id"]
 
-    id = db_client.local.users.insert_one(user_dict).inserted_id
+    id = db_client.users.insert_one(user_dict).inserted_id
 
     new_user = user_schema(db_client.users.find_one({"_id":id}))
 
